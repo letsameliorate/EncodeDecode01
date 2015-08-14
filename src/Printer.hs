@@ -24,6 +24,6 @@ prettyTerm (FunCall (f, ts)) = if ts == []
                                else parens ((text f) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm (Where (f, ts) fds) = parens (((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) $$ (text "where") $$ (vcat (map prettyFunDef fds)))
                                  where
-                                       prettyFunDef (funapp, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
+                                       prettyFunDef (f, ts, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
 
 prettyPrint a = print a

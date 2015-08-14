@@ -6,7 +6,7 @@ type Con  = String
 type FunName  = String
 
 type FunApp = (FunName, [Term])
-type FunDef = (FunApp, Term)
+type FunDef = (FunName, [Term], Term)
 
 data Term = FVarApp FVar [Term]
           | BVarApp BVar [Term]
@@ -24,11 +24,9 @@ instance Eq Term where
   (==) (Lambda x t) (Lambda x' t') = (t == t')
   (==) (Let x t1 t2) (Let x' t1' t2') = (t1 == t1') && (t2 == t2')
   (==) (FunCall (f, ts)) (FunCall (f', ts')) = (f == f') && (ts == ts')
-  (==) t@(Where (f, ts1) fds) t'@(Where (f', ts1') fds') | match t t' = let (funapps, ts2) = unzip fds
-                                                                            (funapps', ts2') = unzip fds'
-                                                                            (fs, tss3) = unzip funapps
-                                                                            (fs', tss3') = unzip funapps'
-                                                                        in (ts1 == ts1') && (fs == fs') && (tss3 == tss3') && (ts2 == ts2')
+  (==) t@(Where (f, ts1) fds) t'@(Where (f', ts1') fds') | match t t' = let (fs, tss, ts) = unzip3 fds
+                                                                            (fs', tss', ts') = unzip3 fds'
+                                                                        in (ts1 == ts1') && (fs == fs') && (all (\(ts, ts') -> ts == ts') (zip tss tss')) && (ts == ts')
   (==) t t' = False
 
 match (FVarApp x ts) (FVarApp x' ts') = (x == x') && (length ts == length ts')
