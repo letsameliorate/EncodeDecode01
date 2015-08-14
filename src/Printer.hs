@@ -19,11 +19,13 @@ prettyTerm (ConApp c ts) = if ts == []
 prettyTerm t@(Lambda _ _) = let (xs, t') = stripLambda t
                             in (text "\\") <> (hsep (map text xs) <> (text ".") <> (prettyTerm t'))
 prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (prettyTerm t'))
+  -- rename and substitute for x in t'
 prettyTerm (FunCall (f, ts)) = if ts == []
                                then (text f)
                                else parens ((text f) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm (Where (f, ts) fds) = parens (((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) $$ (text "where") $$ (vcat (map prettyFunDef fds)))
                                  where
                                        prettyFunDef (f, ts, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
+  -- rename and substitute for bound variables in t in (f, ts, t)
 
 prettyPrint a = print a
