@@ -15,7 +15,7 @@ data Term = FVarApp FVar [Term]
           | Let String Term Term
           | FunCall FunApp
           | Where FunApp [FunDef]
-  deriving (Show)
+  --deriving (Show)
 
 instance Eq Term where
   (==) (FVarApp x ts) (FVarApp x' ts') = (x == x') && (ts == ts')
