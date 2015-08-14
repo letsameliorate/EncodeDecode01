@@ -24,22 +24,23 @@ instance Eq Term where
   (==) (Lambda x t) (Lambda x' t') = (t == t')
   (==) (Let x t1 t2) (Let x' t1' t2') = (t1 == t1') && (t2 == t2')
   (==) (FunCall (f, ts)) (FunCall (f', ts')) = (f == f') && (ts == ts')
-  (==) (Where fapp fds) (Where fapp' fds') = (fapp == fapp') && (fds == fds')
+  (==) t@(Where (f, ts1) fds) t'@(Where (f', ts1') fds') | match t t' = let (funapps, ts2) = unzip fds
+                                                                            (funapps', ts2') = unzip fds'
+                                                                            (fs, tss3) = unzip funapps
+                                                                            (fs', tss3') = unzip funapps'
+                                                                        in (ts1 == ts1') && (fs == fs') && (tss3 == tss3') && (ts2 == ts2')
   (==) t t' = False
 
+match (FVarApp x ts) (FVarApp x' ts') = (x == x') && (length ts == length ts')
+match (BVarApp i ts) (BVarApp i' ts') = (i == i') && (length ts == length ts')
+match (ConApp c ts) (ConApp c' ts') = (c == c') && (length ts == length ts')
+match (Lambda x t) (Lambda x' t') = True
+match (Let x t1 t2) (Let x' t1' t2') = True
+match (FunCall (f, ts)) (FunCall (f', ts')) = (f == f') && (length ts == length ts')
+match (Where (f, ts) fds) (Where (f', ts') fds') = (f == f') && (length ts == length ts') && (length fds == length fds')
+match t t' = False
+
 {-|
-instance Eq DTerm where
-    (==) (DFreeApp x dts) (DFreeApp x' dts') = (x == x') && (dts == dts')
-    (==) (DBoundApp i dts) (DBoundApp i' dts') = (i == i') && (dts == dts')
-    (==) (DConApp c dts) (DConApp c' dts') = (c == c') && (dts == dts')
-    (==) (DLambda x dt) (DLambda x' dt') = (x == x') && (dt == dt')
-    (==) (DLet x dt0 dt1) (DLet x' dt0' dt1') = (dt0 == dt0') && (dt1 == dt1')
-    (==) dt@(DCase csel bs) dt'@(DCase csel' bs') | match dt dt' = (csel == csel') && (all (\((c,xs,bt), (c',xs',bt')) -> (bt == bt')) (zip bs bs'))
-    (==) (DFunApp f dts) (DFunApp f' dts') = (f == f') && (dts == dts')
-    (==) (DWhere dt dts) (DWhere dt' dts') = (dt == dt') && (dts == dts')
-    (==) dt dt1 = False
-
-
 match (DFreeApp x dts) (DFreeApp x' dts') = (x == x') && (length dts == length dts')
 match (DBoundApp i dts) (DBoundApp i' dts') = (i == i') && (length dts == length dts')
 match (DConApp c dts) (DConApp c' dts') = (c == c') && (length dts == length dts')
