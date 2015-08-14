@@ -18,14 +18,19 @@ prettyTerm (ConApp c ts) = if ts == []
                            else parens ((text c) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm t@(Lambda _ _) = let (xs, t') = stripLambda t
                             in (text "\\") <> (hsep (map text xs) <> (text ".") <> (prettyTerm t'))
-prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (prettyTerm t'))
-  -- rename and substitute for x in t'
+prettyTerm (Let x t t') = let x' = rename (frees t') x
+                          in parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (prettyTerm (subst (FVarApp x' []) t')))
+-- prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (prettyTerm t'))
 prettyTerm (FunCall (f, ts)) = if ts == []
                                then (text f)
                                else parens ((text f) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm (Where (f, ts) fds) = parens (((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) $$ (text "where") $$ (vcat (map prettyFunDef fds)))
                                  where
-                                       prettyFunDef (f, ts, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
-  -- rename and substitute for bound variables in t in (f, ts, t)
+                                       prettyFunDef (f, ts, t) = let vs = concatMap frees ts
+                                                                     fvs = foldr (\v fvs -> let v' = (rename fvs v) in v':fvs) (frees t) vs
+                                                                     vs' = take (length vs) fvs
+                                                                     t' = foldr (\v t -> subst (FVarApp v []) t) t vs'
+                                                                 in ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
+                                       -- prettyFunDef (f, ts, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
 
 prettyPrint a = print a
