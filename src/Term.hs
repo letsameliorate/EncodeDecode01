@@ -25,6 +25,7 @@ instance Eq Term where
   (==) (Let x t1 t2) (Let x' t1' t2') = (t1 == t1') && (t2 == t2')
   (==) (FunCall (f, ts)) (FunCall (f', ts')) = (f == f') && (ts == ts')
   (==) (Where fapp fds) (Where fapp' fds') = (fapp == fapp') && (fds == fds')
+  (==) t t' = False
 
 {-|
 instance Eq DTerm where
