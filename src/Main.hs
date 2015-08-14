@@ -8,5 +8,5 @@ import Printer
 main :: IO ()
 main = do
           putStrLn ""
-          prettyPrint (prettyTerm (FVarApp "x" [(ConApp "Nil" [])]))
+          prettyPrint (prettyTerm (FVarApp "x" [(ConApp "Nil" [FVarApp "y" []])]))
           putStrLn ""

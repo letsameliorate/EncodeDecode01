@@ -29,6 +29,4 @@ prettyTerm (Where (f, ts) fds) = parens (((text f) <+> (hcat (punctuate space (m
                                  where
                                        prettyFunDef (funapp, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
 
--- prettyPrint (Left a) = print a
--- prettyPrint (Right a) = print a
 prettyPrint a = print a
