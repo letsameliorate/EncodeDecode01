@@ -28,9 +28,9 @@ abstract x t = abstract' 0 x t
 abstract' i x (FVarApp x' ts) = if x == x'
                                 then BVarApp i (map (abstract' i x) ts)
                                 else FVarApp x' (map (abstract' i x) ts)
-abstract' i x (BVarApp i' ts) = if i' >= i
-                                then BVarApp (i'+1) (map (abstract' i x) ts)
-                                else BVarApp i' (map (abstract' i x) ts)
+abstract' i x (BVarApp i' ts) = if i' < i
+                                then BVarApp i' (map (abstract' i x) ts)
+                                else BVarApp (i'+1) (map (abstract' i x) ts)
 abstract' i x (ConApp c ts) = ConApp c (map (abstract' i x) ts)
 abstract' i x (Lambda x' t) = Lambda x' (abstract' (i+1) x t)
 abstract' i x (Let x' t t') = Let x' (abstract' i x t) (abstract' (i+1) x t')
@@ -53,10 +53,10 @@ shift i d (Where (f, ts) fds) = Where (f, map (shift i d) ts) (map (\(f,ts,t) ->
 subst t t' = subst' 0 t t'
 
 subst' i t (FVarApp x ts) = FVarApp x (map (subst' i t) ts)
-subst' i t@(FVarApp x _) (BVarApp i' ts) = if i' < i
-                                           then BVarApp i' (map (subst' i t) ts) -- removing a variable bound before i'
-                                           else if i' == i
-                                                then FVarApp x (map (subst' i t) ts)
+subst' i t@(FVarApp x _) (BVarApp i' ts) = if i' == i
+                                           then FVarApp x (map (subst' i t) ts)
+                                           else if i' < i
+                                                then BVarApp i' (map (subst' i t) ts) -- removing a variable bound before i'
                                                 else BVarApp (i'-1) (map (subst' i t) ts) -- removing a vairable bound after i'
 subst' i t (ConApp c ts) = ConApp c (map (subst' i t) ts)
 subst' i t (Lambda x t') = Lambda x (subst' (i+1) t t')
