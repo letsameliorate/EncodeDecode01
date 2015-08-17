@@ -20,7 +20,7 @@ prettyTerm t@(Lambda _ _) = let (xs, t') = stripLambda t
                             in (text "\\") <> (hsep (map text xs) <> (text ".") <> (prettyTerm t'))
 prettyTerm (Let x t t') = let x' = rename (frees t') x
                           in parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (text "in") <+> (prettyTerm (subst (FVarApp x' []) t')))
--- prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (prettyTerm t'))
+--prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (text "in") <+> (prettyTerm t'))
 prettyTerm (FunCall (f, ts)) = if ts == []
                                then (text f)
                                else parens ((text f) <+> (hcat (punctuate space (map prettyTerm ts))))
