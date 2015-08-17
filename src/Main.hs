@@ -11,4 +11,4 @@ main = do
           putStrLn ""
           prettyPrint (prettyTerm (FVarApp "x" [(ConApp "Nil" [FVarApp "y" []])]))
           putStrLn ""
-          prettyPrint (parseExpr "f xs ys zs where f Nil (Cons(x,xs)) (Nil) = 0")
+          prettyPrint (parseExpr "f xs")
