@@ -42,6 +42,19 @@ conName = do
              cs <- many alphaNum
              return (c:cs)
 
+makeWhere t@(FVarApp x as) [] = t
+makeWhere t@(FVarApp x as) fds = makeFuns [x] (Where (x,as) fds)
+
+makeFuns fnames (FVarApp x ts) = if x `elem` fnames
+                                 then FunCall (x, (map (makeFuns fnames) ts))
+                                 else FVarApp x (map (makeFuns fnames) ts)
+makeFuns fnames (BVarApp i ts) = BVarApp i (map (makeFuns fnames) ts)
+makeFuns fnames (ConApp c ts) = ConApp c (map (makeFuns fnames) ts)
+makeFuns fnames (Lambda x t) = Lambda x (makeFuns fnames t)
+makeFuns fnames (Let x t1 t2) = Let x (makeFuns fnames t1) (makeFuns fnames t2)
+makeFuns fnames (FunCall (f, ts)) = FunCall (f, (map (makeFuns fnames) ts))
+makeFuns fnames (Where (f, as) fds) = Where (f, as) (map (\(f, ts, t) -> (f, ts, makeFuns fnames t)) fds)
+
 {-|
     Parsers
 |-}
@@ -53,17 +66,16 @@ expr = buildExpressionParser prec term
 prec = []
 
 term =   do -- Where
-            f <- identifier
-            as <- many atom
-            fds <- do
-                      reserved "where"
-                      fds <- sepBy1 fundef (symbol "|")
-                      return fds
-            return (Where (f, as) fds)
-     <|> do -- FVarApp
             x <- identifier
             as <- many atom
-            return (FVarApp x as)
+            fds <-  do
+                       reserved "where"
+                       fds <- sepBy1 fundef (symbol "|")
+                       return fds
+                <|> do
+                       spaces
+                       return []
+            return (makeWhere (FVarApp x as) fds)
      <|> do -- ConApp
             c <- conName
             as <-  do

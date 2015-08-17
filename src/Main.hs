@@ -9,6 +9,6 @@ import Parser
 main :: IO ()
 main = do
           putStrLn ""
-          prettyPrint (prettyTerm (FVarApp "x" [(ConApp "Nil" [FVarApp "y" []])]))
+          -- prettyPrint (prettyTerm (FVarApp "x" [(ConApp "Nil" [FVarApp "y" []])]))
           putStrLn ""
           prettyPrint (parseExpr "f xs")
