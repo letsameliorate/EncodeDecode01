@@ -2,7 +2,6 @@ module Aux where
 
 import Term
 
-
 stripLambda (Lambda x t) = let (xs, t') = stripLambda t
                            in ((x:xs), t')
 stripLambda t = ([],t)

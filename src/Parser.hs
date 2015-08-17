@@ -1,23 +1,22 @@
 module Parser where
 
 import Term
+import Aux
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import qualified Text.ParserCombinators.Parsec.Token as T
 import Text.ParserCombinators.Parsec.Language
-
 
 potDef = emptyDef
          { commentStart     = "{-|",
            commentEnd       = "|-}",
            commentLine      = "--",
            nestedComments   = True,
-           identStart       = lower,
+           identStart       = do lower <|> digit,
            identLetter      = do alphaNum <|> oneOf "_'",
            reservedNames    = ["let", "in", "where"],
            caseSensitive    = True
          }
-
 
 {-|
     Parse Pot to Term
@@ -32,6 +31,7 @@ comm        = T.comma lexer
 identifier  = T.identifier lexer
 reserved    = T.reserved lexer
 natural     = T.natural lexer
+integer     = T.integer lexer
 
 
 list2ConsList [] = ConApp "Nil" []
@@ -75,7 +75,7 @@ term =   do -- Where
                 <|> do
                        spaces
                        return []
-            return (makeWhere (FVarApp x as) fds)
+            return (makeWhere (FVarApp x as) (map (\(f,ts,t) -> (f, ts, foldl (\t x -> abstract x t) t (concatMap frees ts))) fds))
      <|> do -- ConApp
             c <- conName
             as <-  do
@@ -90,7 +90,7 @@ term =   do -- Where
             xs <- many1 identifier
             symbol "."
             e <- expr
-            return (foldr (\x t -> (Lambda x t)) e xs)
+            return (foldr (\x t -> (Lambda x (abstract x t))) e xs)
      <|> do -- Let
             reserved "let"
             x <- identifier
@@ -127,12 +127,13 @@ pattern =   do -- variable
                return (FVarApp x [])
         <|> do -- constructor application
                c <- conName
-               as <- many pattern
+               as <-  do
+                          as <- bracks (sepBy1 pattern comm)
+                          return as
+                  <|> do
+                          spaces
+                          return []
                return (ConApp c as)
-        <|> do -- constructor
-               c <- conName
-               spaces
-               return (ConApp c [])
         <|> do -- (pattern)
                pat <- bracks pattern
                return pat
