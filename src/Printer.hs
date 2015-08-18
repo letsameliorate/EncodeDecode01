@@ -12,15 +12,15 @@ prettyTerm (FVarApp x ts) = if ts == []
                             else parens ((text x) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm (BVarApp i ts) = if ts == []
                             then (text "#") <> (int i)
-                            else parens ((int i) <+> (hcat (punctuate space (map prettyTerm ts))))
+                            else parens ((text "#") <> (int i) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm (ConApp c ts) = if ts == []
                            then (text c)
                            else parens ((text c) <+> (hcat (punctuate space (map prettyTerm ts))))
 prettyTerm t@(Lambda _ _) = let (xs, t') = stripLambda t
                             in (text "\\") <> (hsep (map text xs) <> (text ".") <> (prettyTerm t'))
-prettyTerm (Let x t t') = let x' = rename (frees t') x
-                          in parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (text "in") <+> (prettyTerm (subst (FVarApp x' []) t')))
---prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (text "in") <+> (prettyTerm t'))
+--prettyTerm (Let x t t') = let x' = rename (frees t') x
+--                          in parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (text "in") <+> (prettyTerm (subst (FVarApp x' []) t')))
+prettyTerm (Let x t t') = parens ((((text "let") <+> (text x) <+> (text "=")) <+> (prettyTerm t)) $$ (text "in") <+> (prettyTerm t'))
 prettyTerm (FunCall (f, ts)) = if ts == []
                                then (text f)
                                else parens ((text f) <+> (hcat (punctuate space (map prettyTerm ts))))

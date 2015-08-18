@@ -34,9 +34,8 @@ abstract' i x (ConApp c ts) = ConApp c (map (abstract' i x) ts)
 abstract' i x (Lambda x' t) = Lambda x' (abstract' (i+1) x t)
 abstract' i x (Let x' t t') = Let x' (abstract' i x t) (abstract' (i+1) x t')
 abstract' i x (FunCall (f, ts)) = FunCall (f, (map (abstract' i x) ts))
-abstract' i x (Where (f, ts) fds) = Where (f, ts) (map (\(f,ts,t) -> (f, ts, abstract' (i+(length (concatMap frees ts))) x t)) fds)
+abstract' i x (Where (f, ts) fds) = Where (f, (map (abstract' i x) ts)) (map (\(f,ts,t) -> (f, ts, abstract' (i+(length (concatMap frees ts))) x t)) fds)
 
-{-|
 shift 0 d t = t
 shift i d (FVarApp x ts) = FVarApp x (map (shift i d) ts)
 shift i d (BVarApp j ts) = if j >= d
@@ -47,7 +46,6 @@ shift i d (Lambda x t) = Lambda x (shift i (d+1) t)
 shift i d (Let x t t') = Let x (shift i d t) (shift i (d+1) t')
 shift i d (FunCall (f, ts)) = FunCall (f, map (shift i d) ts)
 shift i d (Where (f, ts) fds) = Where (f, map (shift i d) ts) (map (\(f,ts,t) -> (f, ts, shift i (d+(length (concatMap frees ts))) t)) fds)
-|-}
 
 subst t t' = subst' 0 t t'
 
@@ -61,4 +59,4 @@ subst' i t (ConApp c ts) = ConApp c (map (subst' i t) ts)
 subst' i t (Lambda x t') = Lambda x (subst' (i+1) t t')
 subst' i t (Let x t1 t2) = Let x (subst' i t t1) (subst' (i+1) t t2)
 subst' i t (FunCall (f, ts)) = FunCall (f, (map (subst' i t) ts))
-subst' i t (Where (f, ts) fds) = Where (f, ts) (map (\(f',ts',t') -> (f', ts', subst' (i+(length (concatMap frees ts'))) t t')) fds)
+subst' i t (Where (f, ts) fds) = Where (f, (map (subst' i t) ts)) (map (\(f',ts',t') -> (f', ts', subst' (i+(length (concatMap frees ts'))) t t')) fds)
