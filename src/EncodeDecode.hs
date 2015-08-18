@@ -15,7 +15,7 @@ encode' (ConApp c ts) cs = let (ts', cs') = encode'' (ConApp c ts) cs
 encode' (Lambda x t) cs = encode' t cs
 encode' (Let x t1 t2) cs = encode' t2 cs
 encode' (FunCall (f, ts)) cs = (FunCall ("encode_"++f, ts), cs)
-encode' (Where (f, ts) fds) cs = let f' = "encode_f" ++ f
+encode' (Where (f, ts) fds) cs = let f' = "encode_" ++ f
                                      ts' = ts
                                      (fds', cs') = let (fs, tss, ts) = unzip3 fds
                                                        fs' = map ("encode_" ++) fs
@@ -30,7 +30,7 @@ encode' (Where (f, ts) fds) cs = let f' = "encode_f" ++ f
 encode'' (FVarApp x ts) cs = let (ts', cs') = foldr (\t (ts,cs) -> let (t',cs') = encode' t cs in (t':ts, cs')) ([], cs) ts
                              in (ts', cs')
 encode'' (BVarApp i ts) cs = let (ts', cs') = foldr (\t (ts,cs) -> let (t',cs') = encode' t cs in (t':ts, cs')) ([], cs) ts
-                             in ((BVarApp i []):ts', cs')
+                             in (ts', cs')
 encode'' (ConApp c ts) cs = let (ts', cs') = foldr (\t (ts,cs) -> let (t',cs') = encode' t cs in (t':ts, cs')) ([], cs) ts
                             in (ts', cs')
 encode'' (Lambda x t) cs = encode'' t cs
