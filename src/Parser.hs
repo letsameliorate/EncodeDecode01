@@ -65,9 +65,87 @@ getFNames' fnames (Let x t1 t2) = getFNames' fnames t2
 getFNames' fnames (FunCall (f, ts)) = concatMap (getFNames' fnames) ts
 getFNames' fnames (Where (f, as) fds) = concatMap (\(f,ts,t) -> getFNames' (f:fnames) t) fds
 
+parseExpr = parse expr "(ERROR)"
+
+expr = buildExpressionParser prec term
+
+prec = []
+
+term =   do -- Where and function/variable applications
+            x <- identifier
+            as <- many atom
+            fds <-  do
+                       reserved "where"
+                       fds <- sepBy1 fundef (symbol "|")
+                       return fds
+                <|> do
+                       spaces
+                       return []
+            return (makeWhere (FVarApp x as) (map (\(f,ts,t) -> (f, ts, foldl (\t x -> abstract x t) t (concatMap frees ts))) fds))
+     <|> do -- ConApp
+            c <- conName
+            as <-  do
+                      as <- bracks (sepBy1 expr comm)
+                      return as
+               <|> do
+                      spaces
+                      return []
+            return (ConApp c as)
+     <|> do -- Lambda
+            symbol "\\"
+            xs <- many1 identifier
+            symbol "."
+            e <- expr
+            return (foldr (\x t -> (Lambda x (abstract x t))) e xs)
+     <|> do -- Let
+            reserved "let"
+            x <- identifier
+            symbol "="
+            e1 <- expr
+            reserved "in"
+            e2 <- expr
+            return (Let x e1 (abstract x e2))
+     <|> do -- other expressions
+            a <- atom
+            return a
+
+atom =   do -- FVarApp
+            x <- identifier
+            return (FVarApp x [])
+     <|> do -- [list]
+            symbol "["
+            ts <- sepBy expr comm
+            symbol "]"
+            return (list2ConsList ts)
+     <|> do -- (expression)
+            e <- bracks expr
+            return e
+
+fundef = do
+            f <- identifier
+            ps <- many pattern
+            symbol "="
+            e <- expr
+            return (f, ps, (makeFuns [f] e))
+
+pattern =   do -- variable
+               x <- identifier
+               return (FVarApp x [])
+        <|> do -- constructor application
+               c <- conName
+               as <-  do
+                          as <- bracks (sepBy1 pattern comm)
+                          return as
+                  <|> do
+                          spaces
+                          return []
+               return (ConApp c as)
+        <|> do -- (pattern)
+               pat <- bracks pattern
+               return pat
+
 {-|
     Parsers
-|-}
 
 parseExpr = parse expr "(ERROR)"
 
@@ -147,3 +225,4 @@ pattern =   do -- variable
         <|> do -- (pattern)
                pat <- bracks pattern
                return pat
+|-}

@@ -9,8 +9,8 @@ import EncodeDecode
 main :: IO ()
 main = do
           putStrLn ""
-          let e1 = parseExpr "let v' = 0 in L(f xs ys 0 where f (Cons(x',Cons(x'',xs))) ys v = f xs ys v | f Nil Nil v = v'))"
+          let e1 = parseExpr "f xt yt v where f E E v = v | f E B(y,yt1,yt2) v = v | f B(x,xt1,xt2) E v = v | f B(x,xt1,xt2) B(y,yt1,yt2) v = p x y (f xt1 yt1 v) (f xt2 yt2 v)"
               e2 = encode e1
-          -- prettyPrint e1
-          -- putStrLn ""
+          prettyPrint e1
+          putStrLn ""
           prettyPrint e2
