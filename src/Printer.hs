@@ -30,7 +30,7 @@ prettyTerm (Where (f, ts) fds) = parens (((text f) <+> (hcat (punctuate space (m
                                                                      fvs = foldr (\v fvs -> let v' = (rename fvs v) in v':fvs) (frees t) vs
                                                                      vs' = take (length vs) fvs
                                                                      t' = foldr (\v t -> subst (FVarApp v []) t) t vs'
-                                                                 in ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t')
+                                                                 in ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
                                        --prettyFunDef (f, ts, t) = ((text f) <+> (hcat (punctuate space (map prettyTerm ts)))) <+> (text "=") <+> (prettyTerm t)
 
 -- prettyPrint a = print a
